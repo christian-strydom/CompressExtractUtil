@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -52,26 +53,66 @@ class Program
 
         }
 
-        // Prompt user to select files using OpenFileDialog
-        var openFileDialog = new OpenFileDialog
-        {
-            InitialDirectory = Environment.CurrentDirectory,
-            Filter = "All Files (*.*)|*.*",
-            Title = "Select files to add to archive",
-            Multiselect = true
-        };
+        Console.WriteLine("Select files to add to archive");
+        List<String> files = new List<string>();
 
-        if (openFileDialog.ShowDialog() != DialogResult.OK)
+        bool loop2 = true;
+        while(loop2)
         {
-            return;
+
+            // Prompt user to select files using OpenFileDialog
+            var openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Environment.CurrentDirectory,
+                Filter = "All Files (*.*)|*.*",
+                Title = "Select files to add to archive",
+                Multiselect = true
+            };
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            var newFiles = openFileDialog.FileNames;
+
+            files.AddRange(newFiles);
+            foreach (var file in newFiles)
+            {
+                Console.WriteLine("Copying file: " + file);
+                CopyFile(file, tempFileLocation);
+            }
+
+            Console.WriteLine("Do you want to Add more files (A), Start compressing (C) or Exit (X)");
+            var line = Console.ReadLine()?.ToUpper();
+
+            switch (line)
+            {
+                case "A":
+                    {
+                        Console.WriteLine("Add more files selected");
+                        continue;
+                    }
+                case "C":
+                    {
+                        Console.WriteLine("Start compressing selected");
+                        loop2 = false;
+                        break;
+                    }
+                case "X":
+                    {
+                        Console.WriteLine("Exit selected selected");
+                        Console.WriteLine("Goodbye");
+                        return;
+                    }
+                default:
+                    {
+                        Console.WriteLine("Unkown character");
+                        break;
+                    }
+            }
         }
 
-        var files = openFileDialog.FileNames;
-        foreach (var file in files)
-        {
-            Console.WriteLine("Copying file: " + file);
-            CopyFile(file, tempFileLocation);
-        }
 
         Console.WriteLine("Generating file paths text file");
         var txtFile = "temp/filepaths.txt";
@@ -107,6 +148,8 @@ class Program
         Console.WriteLine("Zip file succesfully created");
         Directory.Delete(tempFileLocation, true);
         Console.WriteLine("Temp folder deleted");
+
+        Console.WriteLine("Sucess, goodbye!");
     }
 
     String[]? SelectFileToCompress()
