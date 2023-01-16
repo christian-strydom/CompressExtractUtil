@@ -242,6 +242,7 @@ class Program
         Console.WriteLine("Start copying files to correct locations");
         string[] filepaths = File.ReadAllLines(tempFileLocation + "/filepaths.txt");
         string userFilesStoragePath = "";
+        OverwritePolicy overwritePolicy = OverwritePolicy.None;
 
         foreach (string filepath in filepaths)
         {
@@ -253,7 +254,9 @@ class Program
                 if(userFilesStoragePath == "")
                 {
                     var username = Environment.UserName;
-                    Console.WriteLine("The file were trying to copy originated from C:\\Users\\UserName\\... which location differs for each PC depending on the account name.");
+                    Console.WriteLine("");
+                    Console.WriteLine("!###############################################################!");
+                    Console.WriteLine("The file we're trying to copy originated from C:\\Users\\UserName\\... which location differs for each PC depending on the account name.");
                     Console.WriteLine("We have detected you account folder name is: " + username);
                     Console.WriteLine("Would you therefore like to copy the files to: " + userDrive + username + "\\...?");
                     Console.WriteLine("Yes (Y) / I would like to specify a custom name (N) / Exit (X)");
@@ -300,8 +303,25 @@ class Program
             {
                 if(File.Exists(finalFilePath))
                 {
+                    if(overwritePolicy == OverwritePolicy.OverwriteAll)
+                    {
+                        Console.WriteLine("Deleting file at: " + finalFilePath);
+                        File.Delete(finalFilePath);
+                        Console.WriteLine("Copying to: " + finalFilePath);
+                        File.Copy(sourceFile, finalFilePath, true);
+                        continue;
+                    }
+
+                    if (overwritePolicy == OverwritePolicy.SkipAll)
+                    {
+                        Console.WriteLine("Skipping file: " + finalFilePath);
+                        continue;
+                    }
+
+                    Console.WriteLine("");
+                    Console.WriteLine("!###############################################################!");
                     Console.WriteLine("The file already exists at: " + finalFilePath);
-                    Console.WriteLine("Do you want to Overwrite (O) this file, Skip (S) this file or Exit (X)?");
+                    Console.WriteLine("Do you want to Overwrite (O) this file, Overwrite all files (OA), Skip (S) this file, Skip all files (SA) or Exit (X)?");
 
                     bool loop3 = true;
                     while(loop3)
@@ -312,9 +332,8 @@ class Program
                             case "O":
                                 {
                                     Console.WriteLine("Selected 'Overwrite'");
-                                    Console.WriteLine("Deleting file at: " + finalFilePath);
+                                    Console.WriteLine("Overwriting file at: " + finalFilePath);
                                     File.Delete(finalFilePath);
-                                    Console.WriteLine("Copying to: " + finalFilePath);
                                     File.Copy(sourceFile, finalFilePath, true);
                                     loop3 = false;
                                     break;
@@ -331,6 +350,24 @@ class Program
                                     Console.WriteLine("Selected 'Exit'");
                                     Console.WriteLine("Goodbye");
                                     return;
+                                }
+                            case "OA":
+                                {
+                                    Console.WriteLine("Selected 'Overwrite All'");
+                                    Console.WriteLine("Overwriting file at: " + finalFilePath);
+                                    File.Delete(finalFilePath);
+                                    File.Copy(sourceFile, finalFilePath, true);
+                                    overwritePolicy = OverwritePolicy.OverwriteAll;
+                                    loop3 = false;
+                                    break;
+                                }
+                            case "SA":
+                                {
+                                    Console.WriteLine("Selected 'Skip All'");
+                                    Console.WriteLine("Skipping file: " + finalFilePath);
+                                    overwritePolicy = OverwritePolicy.SkipAll;
+                                    loop3 = false;
+                                    break;
                                 }
                             default:
                                 {
@@ -394,6 +431,13 @@ class Program
         }
 
         return returnFilePath;
+    }
+
+    private enum OverwritePolicy
+    {
+        None = 0,
+        OverwriteAll = 1,
+        SkipAll = 2,
     }
 
 }
