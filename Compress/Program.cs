@@ -23,7 +23,7 @@ class Program
         Console.WriteLine("===============================================================================================================");
         Console.WriteLine("");
         Console.WriteLine("Description:");
-        Console.WriteLine("This utility allows you to copy files from one PC to another while keeping the folder structure of the files");
+        Console.WriteLine("This utility allows you to copy files from one PC to another while keeping the folder structure of the files.");
         Console.WriteLine("On the source PC use: Compress Files (C). On the destination PC use: Extract Files (E)");
         Console.WriteLine("");
         Console.WriteLine("---------------------------------------------------------------------------------------------------------------");
@@ -174,7 +174,7 @@ class Program
         {
             DefaultExt = "zip",
             Filter = "Zip Files (*.zip)|*.zip",
-            FileName = "Archive_" + username + "_" + DateTime.Now.ToShortDateString() + ".zip",
+            FileName = "Archive_" + username + "_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip",
             Title = "Save archive",
             InitialDirectory = Environment.CurrentDirectory
         };
