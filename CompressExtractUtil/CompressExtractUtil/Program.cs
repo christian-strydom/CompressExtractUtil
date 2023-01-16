@@ -53,6 +53,7 @@ class Program
                     {
                         Console.WriteLine("Selected 'Exit'");
                         Console.WriteLine("Goodbye");
+                        EndOfProgramMessage();
                         return;
                     }
                 default:
@@ -64,7 +65,7 @@ class Program
 
         }
 
-       
+
     }
 
     private static void CompressUserFiles()
@@ -130,11 +131,11 @@ class Program
         }
 
         //Replace C:\Users\John\... with C:\Users\$UserName\...
-        List<String> finalFileNames= new List<String>();
+        List<String> finalFileNames = new List<String>();
 
         foreach (var file in files)
         {
-            if(file.StartsWith(userDrive))
+            if (file.StartsWith(userDrive))
             {
                 int count = 0;
                 int index = -1;
@@ -145,16 +146,16 @@ class Program
                     count++;
                 }
 
-                if(index != -1)
+                if (index != -1)
                 {
-                    finalFileNames.Add(userDrive + "$UserName" + file.Remove(0,index));
+                    finalFileNames.Add(userDrive + "$UserName" + file.Remove(0, index));
                 }
                 else
                 {
                     Console.WriteLine("An error occured");
                     return;
                 }
-                
+
             }
             else
             {
@@ -222,7 +223,7 @@ class Program
         var zipFile = openFileDialog.FileName;
 
         Console.WriteLine("Extracting zip file. Please be patient...");
-        if(!Directory.Exists(tempFileLocation))
+        if (!Directory.Exists(tempFileLocation))
         {
             Directory.CreateDirectory(tempFileLocation);
         }
@@ -235,7 +236,7 @@ class Program
         ZipFile.ExtractToDirectory(zipFile, tempFileLocation);
         Console.WriteLine("Zip file successfully extracted");
 
-        if(!File.Exists(tempFileLocation + "/filepaths.txt"))
+        if (!File.Exists(tempFileLocation + "/filepaths.txt"))
         {
             Console.WriteLine("Error, invalid archive file, filepaths.txt not found!");
             return;
@@ -253,7 +254,7 @@ class Program
 
             if (finalFilePath.StartsWith(userDrive + "$UserName"))
             {
-                if(userFilesStoragePath == "")
+                if (userFilesStoragePath == "")
                 {
                     var username = Environment.UserName;
                     Console.WriteLine("");
@@ -263,35 +264,35 @@ class Program
                     Console.WriteLine("Would you therefore like to copy the files to: " + userDrive + username + "\\...?");
                     Console.WriteLine("Yes (Y) / I would like to specify a custom name (N) / Exit (X)");
                     var line = Console.ReadLine()?.ToUpper();
-                    
+
                     switch (line)
                     {
                         case "Y":
-                        {
-                            userFilesStoragePath = userDrive + username;
-                            Console.WriteLine("User folder path set to: " + userFilesStoragePath + "\\...");
-                            finalFilePath = SetFilePathToCurrentUserFolder(finalFilePath, userFilesStoragePath);
-                            break;
-                        }
+                            {
+                                userFilesStoragePath = userDrive + username;
+                                Console.WriteLine("User folder path set to: " + userFilesStoragePath + "\\...");
+                                finalFilePath = SetFilePathToCurrentUserFolder(finalFilePath, userFilesStoragePath);
+                                break;
+                            }
                         case "N":
-                        {
-                            Console.WriteLine("Please specify a custom user folder name (Case sensitivity is extremely important!)");
-                            var customUserFolderName = Console.ReadLine();
-                            userFilesStoragePath = userDrive + customUserFolderName;
-                            Console.WriteLine("User folder path set to: " + userFilesStoragePath + "\\...");
-                            finalFilePath = SetFilePathToCurrentUserFolder(finalFilePath, userFilesStoragePath);
-                            break;  
-                        }
+                            {
+                                Console.WriteLine("Please specify a custom user folder name (Case sensitivity is extremely important!)");
+                                var customUserFolderName = Console.ReadLine();
+                                userFilesStoragePath = userDrive + customUserFolderName;
+                                Console.WriteLine("User folder path set to: " + userFilesStoragePath + "\\...");
+                                finalFilePath = SetFilePathToCurrentUserFolder(finalFilePath, userFilesStoragePath);
+                                break;
+                            }
                         case "X":
-                        {
-                            Console.WriteLine("Goodbye!");
-                            return;
-                        }
+                            {
+                                Console.WriteLine("Goodbye!");
+                                return;
+                            }
                         default:
-                        {
-                            Console.WriteLine("Unknown character. Goodbye!");
-                            return;
-                        }
+                            {
+                                Console.WriteLine("Unknown character. Goodbye!");
+                                return;
+                            }
                     }
                 }
                 else
@@ -303,9 +304,9 @@ class Program
             string sourceFile = tempFileLocation + "/" + fileName;
             if (File.Exists(sourceFile))
             {
-                if(File.Exists(finalFilePath))
+                if (File.Exists(finalFilePath))
                 {
-                    if(overwritePolicy == OverwritePolicy.OverwriteAll)
+                    if (overwritePolicy == OverwritePolicy.OverwriteAll)
                     {
                         Console.WriteLine("Deleting file at: " + finalFilePath);
                         File.Delete(finalFilePath);
@@ -326,7 +327,7 @@ class Program
                     Console.WriteLine("Do you want to Overwrite (O) this file, Overwrite all files (OA), Skip (S) this file, Skip all files (SA) or Exit (X)?");
 
                     bool loop3 = true;
-                    while(loop3)
+                    while (loop3)
                     {
                         var line = Console.ReadLine()?.ToUpper();
                         switch (line)
@@ -378,7 +379,7 @@ class Program
                                 }
                         }
                     }
-                    
+
                 }
                 else
                 {
@@ -440,6 +441,12 @@ class Program
         None = 0,
         OverwriteAll = 1,
         SkipAll = 2,
+    }
+
+    private static void EndOfProgramMessage()
+    {
+        Console.WriteLine("Press any key to close the application.");
+        Console.ReadLine();
     }
 
 }
