@@ -88,6 +88,8 @@ class Program
 
             if (openFileDialog.ShowDialog() != DialogResult.OK)
             {
+                Console.WriteLine("No file selected.");
+                EndOfProgramMessage();
                 return;
             }
 
@@ -120,6 +122,7 @@ class Program
                     {
                         Console.WriteLine("Selected 'Exit'");
                         Console.WriteLine("Goodbye");
+                        EndOfProgramMessage();
                         return;
                     }
                 default:
@@ -153,6 +156,7 @@ class Program
                 else
                 {
                     Console.WriteLine("An error occured");
+                    EndOfProgramMessage();
                     return;
                 }
 
@@ -182,6 +186,8 @@ class Program
 
         if (saveFileDialog.ShowDialog() != DialogResult.OK)
         {
+            Console.WriteLine("No file selected.");
+            EndOfProgramMessage();
             return;
         }
 
@@ -201,6 +207,7 @@ class Program
         Console.WriteLine("Temp folder deleted");
 
         Console.WriteLine("Sucess, goodbye!");
+        EndOfProgramMessage();
     }
 
     private static void ExtractUserFiles()
@@ -217,6 +224,8 @@ class Program
 
         if (openFileDialog.ShowDialog() != DialogResult.OK)
         {
+            Console.WriteLine("No file selected.");
+            EndOfProgramMessage();
             return;
         }
 
@@ -239,6 +248,7 @@ class Program
         if (!File.Exists(tempFileLocation + "/filepaths.txt"))
         {
             Console.WriteLine("Error, invalid archive file, filepaths.txt not found!");
+            EndOfProgramMessage();
             return;
         }
 
@@ -286,6 +296,7 @@ class Program
                         case "X":
                             {
                                 Console.WriteLine("Goodbye!");
+                                EndOfProgramMessage();
                                 return;
                             }
                         default:
@@ -352,6 +363,7 @@ class Program
                                 {
                                     Console.WriteLine("Selected 'Exit'");
                                     Console.WriteLine("Goodbye");
+                                    EndOfProgramMessage();
                                     return;
                                 }
                             case "OA":
@@ -397,6 +409,7 @@ class Program
         Directory.Delete(tempFileLocation, true);
         Console.WriteLine("Temp folder deleted");
         Console.WriteLine("Sucess, goodbye!");
+        EndOfProgramMessage();
     }
 
 
@@ -431,6 +444,7 @@ class Program
         else
         {
             Console.WriteLine("An error occurred!");
+            EndOfProgramMessage();
         }
 
         return returnFilePath;
