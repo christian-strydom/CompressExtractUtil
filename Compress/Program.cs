@@ -167,12 +167,14 @@ class Program
         // Create a text file with the file paths
         File.WriteAllLines(txtFile, finalFileNames.Select(x => x));
 
+        var username = Environment.UserName;
+
         // Prompt user to select the location to save the zip file
         var saveFileDialog = new SaveFileDialog
         {
             DefaultExt = "zip",
             Filter = "Zip Files (*.zip)|*.zip",
-            FileName = "Archive.zip",
+            FileName = "Archive_" + username + "_" + DateTime.Now.ToShortDateString() + ".zip",
             Title = "Save archive",
             InitialDirectory = Environment.CurrentDirectory
         };
