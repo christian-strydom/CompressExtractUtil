@@ -266,7 +266,7 @@ class Program
             {
                 if (userFilesStoragePath == "")
                 {
-                    var username = Environment.UserName;
+                    var username = Environment.UserName.ToLower();
                     Console.WriteLine("");
                     Console.WriteLine("!###############################################################!");
                     Console.WriteLine("The file we're trying to copy originated from C:\\Users\\UserName\\... which location differs for each PC depending on the account name.");
