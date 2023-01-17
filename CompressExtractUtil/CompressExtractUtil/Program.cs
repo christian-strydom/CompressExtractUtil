@@ -33,6 +33,10 @@ class Program
         Console.WriteLine("Do you want to Compress Files (C), Extract Files (E) or Exit the uititly (X)?");
 
         bool loop = true;
+        if(Directory.Exists(tempFileLocation))
+        {
+            Directory.Delete(tempFileLocation, true);
+        }
 
         while (loop)
         {
@@ -212,11 +216,12 @@ class Program
         // Prompt user to select the location to save the zip file
         var saveFileDialog = new SaveFileDialog
         {
+            InitialDirectory = "C:\\",
             DefaultExt = "zip",
             Filter = "Zip Files (*.zip)|*.zip",
             FileName = "Archive_" + username + "_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip",
             Title = "Save archive",
-            InitialDirectory = "C:\\"
+            
         };
 
         if (saveFileDialog.ShowDialog() != DialogResult.OK)
@@ -252,7 +257,7 @@ class Program
         // Prompt user to select files using OpenFileDialog
         var openFileDialog = new OpenFileDialog
         {
-            InitialDirectory = Environment.CurrentDirectory,
+            InitialDirectory = "C:\\",
             Filter = "Zip Files|*.zip;",
             Title = "Select zip archive to extract",
         };
