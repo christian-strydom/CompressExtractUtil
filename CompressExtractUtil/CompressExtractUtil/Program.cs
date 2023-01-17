@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CompressExtractUtil;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -9,7 +11,7 @@ using System.Windows.Forms;
 class Program
 {
     static String tempFileLocation = Path.GetTempPath() + "/CompressExtractUtil";
-    static String versionCode = "1.0.0.0";
+    static String versionCode = "1.0.0.1";
     static String userDrive = "C:\\Users\\";
 
     [STAThread]
@@ -73,6 +75,7 @@ class Program
         Console.WriteLine("Select files to add to archive");
         List<String> files = new List<string>();
 
+        String lastFilePath = "C:\\";
         bool loop2 = true;
         while (loop2)
         {
@@ -80,7 +83,7 @@ class Program
             // Prompt user to select files using OpenFileDialog
             var openFileDialog = new OpenFileDialog
             {
-                InitialDirectory = Environment.CurrentDirectory,
+                InitialDirectory = lastFilePath,
                 Filter = "All Files (*.*)|*.*",
                 Title = "Select files to add to archive",
                 Multiselect = true
@@ -98,8 +101,25 @@ class Program
             files.AddRange(newFiles);
             foreach (var file in newFiles)
             {
+                bool readOnly = false;
+
+                var fileAttributes = File.GetAttributes(file);
+                if((fileAttributes  & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                {
+                    Console.WriteLine("Read only file detected");
+                    readOnly = true;
+                    FileRemoveReadOnly(file);
+                }
+
                 Console.WriteLine("Copying file: " + file);
                 CopyFile(file, tempFileLocation);
+
+                if(readOnly)
+                {
+                    FileAddReadOnly(file);
+                }
+
+                lastFilePath = Path.GetDirectoryName(file);
             }
 
             Console.WriteLine("Do you want to Add more files (A), Start compressing (C) or Exit (X)");
@@ -134,7 +154,7 @@ class Program
         }
 
         //Replace C:\Users\John\... with C:\Users\$UserName\...
-        List<String> finalFileNames = new List<String>();
+        List<FileData> filesData = new List<FileData>();
 
         foreach (var file in files)
         {
@@ -151,7 +171,13 @@ class Program
 
                 if (index != -1)
                 {
-                    finalFileNames.Add(userDrive + "$UserName" + file.Remove(0, index));
+                    var fileAttributes = File.GetAttributes(file);
+
+                    filesData.Add(new FileData
+                    {
+                        FileAttributes = fileAttributes,
+                        FilePath = userDrive + "$UserName" + file.Remove(0, index),
+                    });
                 }
                 else
                 {
@@ -163,14 +189,23 @@ class Program
             }
             else
             {
-                finalFileNames.Add(file);
+                var fileAttributes = File.GetAttributes(file);
+
+                filesData.Add(new FileData
+                {
+                    FileAttributes = fileAttributes,
+                    FilePath = file,
+                });
             }
         }
 
         Console.WriteLine("Generating file paths text file");
-        var txtFile = tempFileLocation + "/filepaths.txt";
+        var txtFile = tempFileLocation + "/filedata.json";
+
+        var dataToStore = JsonConvert.SerializeObject(filesData);
+
         // Create a text file with the file paths
-        File.WriteAllLines(txtFile, finalFileNames.Select(x => x));
+        File.WriteAllText(txtFile, dataToStore);
 
         var username = Environment.UserName;
 
@@ -181,7 +216,7 @@ class Program
             Filter = "Zip Files (*.zip)|*.zip",
             FileName = "Archive_" + username + "_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip",
             Title = "Save archive",
-            InitialDirectory = Environment.CurrentDirectory
+            InitialDirectory = "C:\\"
         };
 
         if (saveFileDialog.ShowDialog() != DialogResult.OK)
@@ -245,20 +280,23 @@ class Program
         ZipFile.ExtractToDirectory(zipFile, tempFileLocation);
         Console.WriteLine("Zip file successfully extracted");
 
-        if (!File.Exists(tempFileLocation + "/filepaths.txt"))
+        if (!File.Exists(tempFileLocation + "/filedata.json"))
         {
-            Console.WriteLine("Error, invalid archive file, filepaths.txt not found!");
+            Console.WriteLine("Error, invalid archive file, filedata.json not found!");
             EndOfProgramMessage();
             return;
         }
 
         Console.WriteLine("Start copying files to correct locations");
-        string[] filepaths = File.ReadAllLines(tempFileLocation + "/filepaths.txt");
+        List<FileData> filesData = JsonConvert.DeserializeObject<List<FileData>>(File.ReadAllText(tempFileLocation + "/filedata.json"));
+
+        //string[] filepaths = File.ReadAllLines(tempFileLocation + "/filedata.json");
         string userFilesStoragePath = "";
         OverwritePolicy overwritePolicy = OverwritePolicy.None;
 
-        foreach (string filepath in filepaths)
+        foreach (FileData fileData in filesData)
         {
+            var filepath = fileData.FilePath;
             string fileName = Path.GetFileName(filepath);
             string finalFilePath = filepath;
 
@@ -323,6 +361,7 @@ class Program
                         File.Delete(finalFilePath);
                         Console.WriteLine("Copying to: " + finalFilePath);
                         File.Copy(sourceFile, finalFilePath, true);
+                        File.SetAttributes(finalFilePath, fileData.FileAttributes);
                         continue;
                     }
 
@@ -349,6 +388,7 @@ class Program
                                     Console.WriteLine("Overwriting file at: " + finalFilePath);
                                     File.Delete(finalFilePath);
                                     File.Copy(sourceFile, finalFilePath, true);
+                                    File.SetAttributes(finalFilePath, fileData.FileAttributes);
                                     loop3 = false;
                                     break;
                                 }
@@ -372,6 +412,7 @@ class Program
                                     Console.WriteLine("Overwriting file at: " + finalFilePath);
                                     File.Delete(finalFilePath);
                                     File.Copy(sourceFile, finalFilePath, true);
+                                    File.SetAttributes(finalFilePath, fileData.FileAttributes);
                                     overwritePolicy = OverwritePolicy.OverwriteAll;
                                     loop3 = false;
                                     break;
@@ -402,6 +443,7 @@ class Program
                     }
                     Console.WriteLine("Copying to: " + finalFilePath);
                     File.Copy(sourceFile, finalFilePath, true);
+                    File.SetAttributes(finalFilePath, fileData.FileAttributes);
                 }
             }
         }
@@ -463,4 +505,22 @@ class Program
         Console.ReadLine();
     }
 
+    private static void FileRemoveReadOnly(string path)
+    {
+        Console.WriteLine("Removed read only property");
+        FileAttributes attributes = File.GetAttributes(path);
+        attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
+        File.SetAttributes(path, attributes);
+    }
+
+    private static void FileAddReadOnly(string path)
+    {
+        Console.WriteLine("Added read only property");
+        File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.ReadOnly);
+    }
+
+    private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
+    {
+        return attributes & ~attributesToRemove;
+    }
 }
